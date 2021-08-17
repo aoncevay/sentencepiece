@@ -85,6 +85,12 @@ class Trainer : public TrainerInterface {
   // Gets unary (character) symbol from the char code |c|.
   // The return value is cached.
   Symbol *GetCharSymbol(char32 c);
+  // Gets unary (piece) symbol
+  // The return value is cached.
+  Symbol *GetPieceSymbol(std::string piece);
+
+  // Analyses whether a piece is in a vector:
+  //bool StringInVector(std::string, std::vector<std::string>);
 
   // Gets symbol pair from left/right symbols. The return value is cached.
   Symbol *GetPairSymbol(const Symbol *left, const Symbol *right);
@@ -101,6 +107,10 @@ class Trainer : public TrainerInterface {
   // Makes a new bigram from [symbols_[sid][left], symbols_[sid][right]] and
   // Adds it to symbols_cache_ and active_symbols_.
   void AddNewPair(int sid, int left, int right);
+
+   // Makes a new n-gram from a required piece (string)
+  // Adds it to symbols_cache_ and active_symbols_.
+  void AddNewPiece(std::string, int sid);
 
   // Resets the fequency of bigram [symbols_[sid][left] symbols_[sid][right]],
   // if this bigram is not |best|.
@@ -121,6 +131,7 @@ class Trainer : public TrainerInterface {
 
   // Sentences. symbols_[sid][index] stores a symbol in sentence_[sid][index].
   std::vector<std::vector<Symbol *>> symbols_;
+  
 };
 }  // namespace bpe
 }  // namespace sentencepiece

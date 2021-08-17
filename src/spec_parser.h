@@ -149,6 +149,7 @@ inline std::string PrintProto(const TrainerSpec &message,
   PRINT_REPEATED_STRING(control_symbols);
   PRINT_REPEATED_STRING(user_defined_symbols);
   PRINT_PARAM(required_chars);
+  PRINT_PARAM(required_pieces);
   PRINT_PARAM(byte_fallback);
   PRINT_PARAM(vocabulary_output_piece_score);
   PRINT_PARAM(train_extremely_large_corpus);
@@ -224,6 +225,7 @@ util::Status SentencePieceTrainer::SetProtoField(const std::string &name,
   PARSE_REPEATED_STRING(control_symbols);
   PARSE_REPEATED_STRING(user_defined_symbols);
   PARSE_STRING(required_chars);
+  PARSE_STRING(required_pieces);
   PARSE_BOOL(byte_fallback);
   PARSE_BOOL(hard_vocab_limit);
   PARSE_BOOL(vocabulary_output_piece_score);

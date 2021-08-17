@@ -45,6 +45,46 @@ Trainer::Symbol *Trainer::GetCharSymbol(char32 c) {
   return s;
 }
 
+Trainer::Symbol *Trainer::GetPieceSymbol(std::string piece) {
+  const uint64 freq = port::FindWithDefault(required_chars_, (char32)(piece[1]), 1);
+  CHECK_GT(freq, 0);
+
+  string_util::UnicodeText ut;
+  char32 c_ant = ' ';
+  uint64 fp_tmp;
+  for (const char32 c : string_util::UTF8ToUnicodeText(piece)){
+    if (c_ant != ' ') fp_tmp = port::FingerprintCat(c_ant, c);
+    ut.push_back(c);
+    c_ant = c;
+  }
+
+  const auto it = symbols_cache_.find(fp_tmp);
+  if (it != symbols_cache_.end()) {
+    //return it->second;
+    return nullptr;
+  }
+  //LOG(INFO) << "Inserting req piece = " << piece << " " << ut << " " << fp_tmp << " " << freq;
+  Symbol *s = new Symbol;
+  allocated_.push_back(s);
+  //s->is_unk = 0;
+  s->fp = fp_tmp;
+  s->chars = ut;
+  s->freq = freq;
+  port::InsertOrDie(&symbols_cache_, s->fp, s);
+  return s;
+}
+
+/*
+bool StringInVector(std::string piece, std::vector<std::string> v){
+  auto it = v.begin();
+    while (it != v.end()){
+      if (*it == piece) break;
+      it++;
+    }
+    return !(it == v.end());
+}*/
+
+
 Trainer::Symbol *Trainer::GetPairSymbol(const Symbol *left,
                                         const Symbol *right) {
   if (left == nullptr || right == nullptr || left->is_unk || right->is_unk) {
@@ -134,6 +174,15 @@ void Trainer::AddNewPair(int sid, int left, int right) {
   }
 }
 
+void Trainer::AddNewPiece(std::string piece, int sid) {
+  //if (left == -1 || right == -1) return;
+  auto *symbol = GetPieceSymbol(piece);
+  if (symbol != nullptr) {
+    active_symbols_.insert(symbol);
+    symbol->positions.insert(EncodePos(sid, sid, sid+1));
+  }
+}
+
 void Trainer::ResetFreq(int sid, int left, int right, const Symbol *best) {
   if (left == -1 || right == -1) return;
   auto *symbol = GetPairSymbol(symbols_[sid][left], symbols_[sid][right]);
@@ -204,8 +253,14 @@ util::Status Trainer::Train() {
     }
   }
 
+  // Makes all n-grams symbols from required pieces:
+  //for (size_t sid = 0; sid < required_pieces_.size(); ++sid) {
+  //  AddNewPiece(required_pieces_[sid], sid);
+  //}
+
+  // If we are going to add it at the end... 
   const int vocab_size =
-      trainer_spec_.vocab_size() - meta_pieces_.size() - required_chars_.size();
+      trainer_spec_.vocab_size() - meta_pieces_.size() - required_chars_.size(); // - required_pieces_.size();
   CHECK_GE_OR_RETURN(vocab_size, 0);
 
   // We may see duplicated pieces that are extracted with different path.
@@ -215,6 +270,14 @@ util::Status Trainer::Train() {
 
   // Main loop.
   CHECK_OR_RETURN(final_pieces_.empty());
+
+  // Adding pieces at the beginning...
+  // Stores the best_symbol in the final output.
+  for (auto piece: required_pieces_){
+    final_pieces_.emplace_back(piece,
+                  -static_cast<float>(final_pieces_.size()));
+  }
+
   while (final_pieces_.size() < static_cast<size_t>(vocab_size)) {
     constexpr int kUpdateActiveSymbolsInteval = 100;
     if (final_pieces_.size() % kUpdateActiveSymbolsInteval == 0) {
@@ -226,9 +289,12 @@ util::Status Trainer::Train() {
     for (auto &it : active_symbols_) {
       Symbol *symbol = it;
       ComputeFreq(symbol);
+      // Checking if the symbol is in required pieces...
+      //bool isRequired = !(find(required_pieces_.begin(), required_pieces_.end(), symbol->ToString()) == required_pieces_.end());
       // If the frequency is the same, take shorter symbol.
       // if the length is the same, use lexicographical comparison
       if (best_symbol == nullptr ||
+      //    (isRequired ||
           (symbol->freq > best_symbol->freq ||
            (symbol->freq == best_symbol->freq &&
             (symbol->chars.size() < best_symbol->chars.size() ||
@@ -250,10 +316,11 @@ util::Status Trainer::Train() {
       continue;
     }
 
-    // Stores the best_symbol in the final output.
-    final_pieces_.emplace_back(best_symbol->ToString(),
-                               -static_cast<float>(final_pieces_.size()));
-
+    if (find(required_pieces_.begin(), required_pieces_.end(), best_symbol->ToString()) == required_pieces_.end()){
+      // Stores the best_symbol in the final output.
+      final_pieces_.emplace_back(best_symbol->ToString(),
+                                -static_cast<float>(final_pieces_.size()));
+    }
     if (final_pieces_.size() % 20 == 0) {
       LOG(INFO) << "Added: freq=" << best_symbol->freq
                 << " size=" << final_pieces_.size()
@@ -298,11 +365,28 @@ util::Status Trainer::Train() {
     active_symbols_.erase(best_symbol);
   }  // end of main loop
 
+  /*
+  // Adds required_pieces_
+  for (const std::string piece : required_pieces_) {
+    auto it = final_pieces_.begin();
+    while (it != final_pieces_.end()){
+      if (it->first == piece) break;
+      it++;
+    }
+    if (it == final_pieces_.end()) {
+      LOG(INFO) << "Inserting req piece = " << piece;
+      final_pieces_.emplace_back(piece, -static_cast<float>(final_pieces_.size()));
+      //final_pieces_.emplace(final_pieces_.begin(), piece, -static_cast<float>(final_pieces_.size()));
+    }
+  }*/
+
   // Adds required_chars_
   for (const auto &w : Sorted(required_chars_)) {
     const Symbol *symbol = GetCharSymbol(w.first);
-    final_pieces_.emplace_back(symbol->ToString(),
+    if (find(required_pieces_.begin(), required_pieces_.end(), symbol->ToString()) == required_pieces_.end()){
+      final_pieces_.emplace_back(symbol->ToString(),
                                -static_cast<float>(final_pieces_.size()));
+    }
   }
 
   port::STLDeleteElements(&allocated_);

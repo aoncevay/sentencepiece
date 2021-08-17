@@ -347,6 +347,9 @@ class TrainerSpec::_Internal {
   static void set_has_required_chars(HasBits* has_bits) {
     (*has_bits)[0] |= 4u;
   }
+  static void set_has_required_pieces(HasBits* has_bits) {
+    (*has_bits)[0] |= 4u;
+  }
   static void set_has_byte_fallback(HasBits* has_bits) {
     (*has_bits)[0] |= 32768u;
   }
@@ -431,6 +434,11 @@ TrainerSpec::TrainerSpec(const TrainerSpec& from)
     required_chars_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_required_chars(), 
       GetArena());
   }
+  required_pieces_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (from._internal_has_required_pieces()) {
+    required_pieces_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_required_pieces(), 
+      GetArena());
+  }
   unk_surface_.UnsafeSetDefault(nullptr);
   if (from._internal_has_unk_surface()) {
     unk_surface_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::NonEmptyDefault{}, from._internal_unk_surface(), 
@@ -467,6 +475,7 @@ void TrainerSpec::SharedCtor() {
   model_prefix_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   input_format_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   required_chars_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  required_pieces_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   unk_surface_.UnsafeSetDefault(nullptr);
   unk_piece_.UnsafeSetDefault(nullptr);
   bos_piece_.UnsafeSetDefault(nullptr);
@@ -507,6 +516,7 @@ void TrainerSpec::SharedDtor() {
   model_prefix_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   input_format_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   required_chars_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  required_pieces_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   unk_surface_.DestroyNoArena(nullptr);
   unk_piece_.DestroyNoArena(nullptr);
   bos_piece_.DestroyNoArena(nullptr);
@@ -550,6 +560,7 @@ void TrainerSpec::Clear() {
     }
     if (cached_has_bits & 0x00000004u) {
       required_chars_.ClearNonDefaultToEmpty();
+      required_pieces_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000008u) {
       unk_surface_.ClearToDefault(::sentencepiece::TrainerSpec::_i_give_permission_to_break_this_code_default_unk_surface_, GetArena());
@@ -963,6 +974,14 @@ const char* TrainerSpec::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
+      // optional string required_pieces = 50;
+      case 50:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 150)) {
+          auto str = _internal_mutable_required_pieces();
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
@@ -1249,6 +1268,12 @@ failure:
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteBoolToArray(49, this->_internal_train_extremely_large_corpus(), target);
   }
 
+  // optional string required_pieces = 50;
+  if (cached_has_bits & 0x00000004u) {
+    target = stream->WriteStringMaybeAliased(
+        50, this->_internal_required_pieces(), target);
+  }
+
   // Extension range [200, 536870912)
   target = _extensions_._InternalSerialize(
       200, 536870912, target, stream);
@@ -1359,6 +1384,13 @@ size_t TrainerSpec::ByteSizeLong() const {
       total_size += 2 +
         ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
           this->_internal_pad_piece());
+    }
+
+    // optional string required_pieces = 50;
+    if (cached_has_bits & 0x00000004u) {
+      total_size += 2 +
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+          this->_internal_required_pieces());
     }
 
   }
@@ -1581,6 +1613,7 @@ void TrainerSpec::MergeFrom(const TrainerSpec& from) {
     }
     if (cached_has_bits & 0x00000004u) {
       _internal_set_required_chars(from._internal_required_chars());
+      _internal_set_required_pieces(from._internal_required_pieces());
     }
     if (cached_has_bits & 0x00000008u) {
       _internal_set_unk_surface(from._internal_unk_surface());
@@ -1728,6 +1761,7 @@ void TrainerSpec::InternalSwap(TrainerSpec* other) {
   model_prefix_.Swap(&other->model_prefix_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   input_format_.Swap(&other->input_format_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   required_chars_.Swap(&other->required_chars_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  required_pieces_.Swap(&other->required_pieces_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   unk_surface_.Swap(&other->unk_surface_, nullptr, GetArena());
   unk_piece_.Swap(&other->unk_piece_, nullptr, GetArena());
   bos_piece_.Swap(&other->bos_piece_, nullptr, GetArena());

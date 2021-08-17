@@ -130,7 +130,11 @@ class TrainerInterface {
   // Set of characters which must be included in the final vocab.
   // The value of this map stores the frequency.
   absl::flat_hash_map<char32, int64> required_chars_;
-
+  // AO: Set of pieces which must be included in the final vocab.
+  // I don't have a frequency value though....
+  //absl::flat_hash_map<std::string, int64> required_pieces_;
+  std::vector<std::string> required_pieces_;
+  
   // Final output pieces
   std::vector<std::pair<std::string, float>> final_pieces_;
 

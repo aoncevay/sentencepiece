@@ -143,6 +143,11 @@ ABSL_FLAG(bool, train_extremely_large_corpus,
           "Increase bit depth for unigram tokenization.");
 ABSL_FLAG(uint32, random_seed, static_cast<uint32>(-1),
           "Seed value for random generator.");
+// AO: new arguments for the required pieces
+ABSL_FLAG(std::string, required_pieces, "",
+          "pieces in this flag (separated by whitespace) are always used.");
+ABSL_FLAG(std::string, required_pieces_file, "",
+          "load required_pieces from file (whitespace sep).");
 
 int main(int argc, char *argv[]) {
   sentencepiece::ParseCommandLineFlags(argv[0], &argc, &argv, true);
@@ -230,6 +235,8 @@ int main(int argc, char *argv[]) {
   SetTrainerSpecFromFlag(unk_surface);
   SetTrainerSpecFromFlag(required_chars);
   SetTrainerSpecFromFile(required_chars);
+  SetTrainerSpecFromFlag(required_pieces);
+  SetTrainerSpecFromFile(required_pieces);
   SetTrainerSpecFromFlag(vocabulary_output_piece_score);
   SetRepeatedTrainerSpecFromFlag(accept_language);
   SetRepeatedTrainerSpecFromFlag(control_symbols);

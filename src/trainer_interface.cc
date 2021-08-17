@@ -300,6 +300,7 @@ util::Status TrainerInterface::LoadSentences() {
   RETURN_IF_ERROR(status());
   CHECK_OR_RETURN(sentences_.empty());
   CHECK_OR_RETURN(required_chars_.empty());
+  CHECK_OR_RETURN(required_pieces_.empty());
   CHECK_OR_RETURN(trainer_spec_.input_format().empty() ||
                   trainer_spec_.input_format() == "text" ||
                   trainer_spec_.input_format() == "tsv")
@@ -504,15 +505,31 @@ END:
     w.first = string_util::UnicodeTextToUTF8(uw2);
   }
 
+  // Obtaining list of required pieces, and save it in required_pieces_
+  // Optional converting? std::string string_util::UTF8ToUnicodeText(trainer_spec_.required_pieces())
+  std::string temp_piece = "";
+	for(int i=0; i<trainer_spec_.required_pieces().length(); ++i){
+		
+		if(trainer_spec_.required_pieces()[i]==' '){
+			required_pieces_.push_back(temp_piece);
+			temp_piece = "";
+		}
+		else{
+			temp_piece.push_back(trainer_spec_.required_pieces()[i]);
+		}
+	}
+	required_pieces_.push_back(temp_piece);
+  LOG(INFO) << "Number of required pieces=" << required_pieces_.size();
+
   // +3 for meta pieces.
   if (trainer_spec_.model_type() != TrainerSpec::WORD &&
       trainer_spec_.model_type() != TrainerSpec::CHAR) {
     CHECK_LE_OR_RETURN(
-        static_cast<int>(required_chars_.size() + meta_pieces_.size()),
+        static_cast<int>(required_chars_.size() + required_pieces_.size() + meta_pieces_.size()),
         trainer_spec_.vocab_size())
-        << "Vocabulary size is smaller than required_chars. "
+        << "Vocabulary size is smaller than required_chars + required_pieces. "
         << trainer_spec_.vocab_size() << " vs "
-        << required_chars_.size() + meta_pieces_.size() << ". "
+        << required_chars_.size() + required_pieces_.size() + meta_pieces_.size() << ". "
         << "Increase vocab_size or decrease character_coverage with "
         << "--character_coverage option.";
   }

@@ -459,6 +459,26 @@ class TrainerSpec PROTOBUF_FINAL :
   std::string* _internal_mutable_required_chars();
   public:
 
+  // optional string required_pieces = ??;
+  bool has_required_pieces() const;
+  private:
+  bool _internal_has_required_pieces() const;
+  public:
+  void clear_required_pieces();
+  const std::string& required_pieces() const;
+  void set_required_pieces(const std::string& value);
+  void set_required_pieces(std::string&& value);
+  void set_required_pieces(const char* value);
+  void set_required_pieces(const char* value, size_t size);
+  std::string* mutable_required_pieces();
+  std::string* release_required_pieces();
+  void set_allocated_required_pieces(std::string* required_pieces);
+  private:
+  const std::string& _internal_required_pieces() const;
+  void _internal_set_required_pieces(const std::string& value);
+  std::string* _internal_mutable_required_pieces();
+  public:
+
   // optional string unk_surface = 44 [default = " \342\201\207 "];
   bool has_unk_surface() const;
   private:
@@ -955,6 +975,7 @@ class TrainerSpec PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr model_prefix_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr input_format_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr required_chars_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr required_pieces_;
   static const ::PROTOBUF_NAMESPACE_ID::internal::LazyString _i_give_permission_to_break_this_code_default_unk_surface_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr unk_surface_;
   static const ::PROTOBUF_NAMESPACE_ID::internal::LazyString _i_give_permission_to_break_this_code_default_unk_piece_;
@@ -3047,6 +3068,80 @@ inline void TrainerSpec::set_allocated_required_chars(std::string* required_char
   required_chars_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), required_chars,
       GetArena());
   // @@protoc_insertion_point(field_set_allocated:sentencepiece.TrainerSpec.required_chars)
+}
+
+
+// optional string required_pieces = 50;
+inline bool TrainerSpec::_internal_has_required_pieces() const {
+  bool value = (_has_bits_[0] & 0x00000004u) != 0;
+  return value;
+}
+inline bool TrainerSpec::has_required_pieces() const {
+  return _internal_has_required_pieces();
+}
+inline void TrainerSpec::clear_required_pieces() {
+  required_pieces_.ClearToEmpty();
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline const std::string& TrainerSpec::required_pieces() const {
+  // @@protoc_insertion_point(field_get:sentencepiece.TrainerSpec.required_pieces)
+  return _internal_required_pieces();
+}
+inline void TrainerSpec::set_required_pieces(const std::string& value) {
+  _internal_set_required_pieces(value);
+  // @@protoc_insertion_point(field_set:sentencepiece.TrainerSpec.required_pieces)
+}
+inline std::string* TrainerSpec::mutable_required_pieces() {
+  // @@protoc_insertion_point(field_mutable:sentencepiece.TrainerSpec.required_pieces)
+  return _internal_mutable_required_pieces();
+}
+inline const std::string& TrainerSpec::_internal_required_pieces() const {
+  return required_pieces_.Get();
+}
+inline void TrainerSpec::_internal_set_required_pieces(const std::string& value) {
+  _has_bits_[0] |= 0x00000004u;
+  required_pieces_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
+}
+inline void TrainerSpec::set_required_pieces(std::string&& value) {
+  _has_bits_[0] |= 0x00000004u;
+  required_pieces_.Set(
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:sentencepiece.TrainerSpec.required_pieces)
+}
+inline void TrainerSpec::set_required_pieces(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  _has_bits_[0] |= 0x00000004u;
+  required_pieces_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
+  // @@protoc_insertion_point(field_set_char:sentencepiece.TrainerSpec.required_pieces)
+}
+inline void TrainerSpec::set_required_pieces(const char* value,
+    size_t size) {
+  _has_bits_[0] |= 0x00000004u;
+  required_pieces_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:sentencepiece.TrainerSpec.required_pieces)
+}
+inline std::string* TrainerSpec::_internal_mutable_required_pieces() {
+  _has_bits_[0] |= 0x00000004u;
+  return required_pieces_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
+}
+inline std::string* TrainerSpec::release_required_pieces() {
+  // @@protoc_insertion_point(field_release:sentencepiece.TrainerSpec.required_pieces)
+  if (!_internal_has_required_pieces()) {
+    return nullptr;
+  }
+  _has_bits_[0] &= ~0x00000004u;
+  return required_pieces_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void TrainerSpec::set_allocated_required_pieces(std::string* required_pieces) {
+  if (required_pieces != nullptr) {
+    _has_bits_[0] |= 0x00000004u;
+  } else {
+    _has_bits_[0] &= ~0x00000004u;
+  }
+  required_pieces_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), required_pieces,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:sentencepiece.TrainerSpec.required_pieces)
 }
 
 // optional bool byte_fallback = 35 [default = false];

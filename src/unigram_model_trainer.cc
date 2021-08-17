@@ -171,6 +171,18 @@ TrainerModel::SentencePieces Trainer::MakeSeedSentencePieces() const {
     seed_sentencepieces.emplace_back(it);
   }
 
+  // AO: We add the prior list of affixes ...
+  /*
+  absl::flat_hash_map<std::string, int64> all_pieces;
+  for (const auto it : required_pieces_) {
+    auto c_tmp = it[0];
+    all_pieces[it] = all_chars[string_util::UnicodeCharToUTF8(c_tmp)];
+  }
+  for (const auto &it : all_pieces) {
+  //  CHECK(!port::ContainsKey(all_chars, it)); // we can avoid this a bit
+    seed_sentencepieces.emplace_back(it);
+  }*/
+
   // Sort by the coverage of sub strings.
   for (const auto &p : Sorted(substr_index)) {
     const node_int_type offset = SA[L[p.first]];
@@ -186,6 +198,8 @@ TrainerModel::SentencePieces Trainer::MakeSeedSentencePieces() const {
       break;
     }
     CHECK(!port::ContainsKey(all_chars, w));
+    // AO: Adding an extra check to avoid duality....
+    //CHECK(!port::ContainsKey(all_affixes, w));
     seed_sentencepieces.emplace_back(w, p.second);
   }
 
@@ -430,6 +444,47 @@ TrainerModel::SentencePieces Trainer::FinalizeSentencePieces(
   absl::flat_hash_map<std::string, float> sp(sentencepieces.begin(),
                                              sentencepieces.end());
 
+  // required_pieces_ must be included in the final sentencepieces.
+  // finding the best_score for any required_pieces_
+  float first_score_reqp = 0.0;
+  float last_score_reqp  = 0.0;
+  bool one_found = false;
+  // we look into the sorted sentencepiece by the score
+  const auto sorted_sentencepieces = Sorted(sentencepieces);
+  for (const auto &w : sorted_sentencepieces) {
+    // the first match is the one we care....
+    if (find(required_pieces_.begin(), required_pieces_.end(), w.first) != required_pieces_.end()){
+      if (!one_found){
+        first_score_reqp = w.second;
+        LOG(INFO) << "Req-piece (first) = " << w.first << "(" << first_score_reqp << ")";
+        one_found = true;
+      }
+      else{
+        last_score_reqp = w.second;
+        LOG(INFO) << "Req-piece (second)= " << w.first << "(" << last_score_reqp  << ")";
+        break;
+      }
+    }
+  }
+  /*
+  for (auto it = sorted_sentencepieces.rbegin(); it != sorted_sentencepieces.rend(); ++it ){
+    if (find(required_pieces_.begin(), required_pieces_.end(), it->first) != required_pieces_.end()){
+      last_score_reqp = it->second;
+      LOG(INFO) << "Req-piece (last) =" << it->first << "(" << last_score_reqp << ")";
+      break;
+    }
+  }*/
+  float delta_score_penalty = std::abs((last_score_reqp - first_score_reqp)/required_pieces_.size());
+  int count = 0;
+  for (std::string s: required_pieces_){
+    //if (port::ContainsKey(sp, s)) {
+    //  final_sentencepieces[s] = sp[s];
+    //} else {
+    final_sentencepieces[s] = first_score_reqp - count*delta_score_penalty; //best_score_reqp + (-1*(best_score_reqp>=0) + (best_score_reqp<0))*min_score_penalty;
+    count += 1;
+    //min_score_penalty += kMinScorePenaltyDelta;
+    //}
+  }
   // required_chars_ must be included in the final sentencepieces.
   float min_score_penalty = 0.0;
   constexpr float kMinScorePenaltyDelta = 0.0001;
